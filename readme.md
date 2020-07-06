@@ -33,9 +33,6 @@ Features
  * 2020-06-17 Solder stepper motor
  * 2020-06-17 CAD design
  * 2020-06-17 Gear train 
- * 2020-07-01 Printing components
- * 2020-07-03 Removing internal supports to make room for electronics
- 
  
  
 ### What's next
@@ -44,8 +41,7 @@ Features
  
  
 ### Notebook
- * Battery source Li-Po, Li-ion, or Ni-Mh. Ni-Mh has a similar capacity to Li-ion and weight isn't an issue. I already have these batteries and a simple USB charger for them. Size is a little big but it can fit more or less.  
- * Ni-Mh won't work the voltage is too low max voltage is 2.4
+ * Battery source Li-Po, Li-ion, or Ni-Mh. Ni-Mh has a similar capacity to Li-ion and weight isn't an issue. I already have these batteries and a simple USB charger for them. Size is a little big but it can fit ore or less.  
 
  * Direct control of mini stepper motor			https://www.youtube.com/watch?v=MaByP2w_vtA
  * Idea for slip ring power for LED strobe		https://gizmoplans.com/product/wind-turbine-slip-rings/
