@@ -33,6 +33,8 @@ Features
  * 2020-06-17 Solder stepper motor
  * 2020-06-17 CAD design
  * 2020-06-17 Gear train 
+ * 2020-07-04 Redesign CAD P09_00_01
+ * 2020-07-04 Start writing software
  
  
 ### What's next
