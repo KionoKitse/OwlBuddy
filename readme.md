@@ -35,11 +35,39 @@ Features
  * 2020-06-17 Gear train 
  * 2020-07-04 Redesign CAD P09_00_01
  * 2020-07-04 Start writing software
- 
+ * 2020-07-13 Finished 3D printing main components
+ * 2020-07-13 Got the VCC readings from the pro mini
  
 ### What's next
- * Learning how to use 3D printer
- * Get components
+ * Paint beacon lens
+ * Create continuous rotation servo
+ * Program components
+ * Print end cap (need to include programming port)
+ * Design layout
+ * Test pro mini pins
+ * Need to reduce the battery until I can find the min voltage that will drive this project
+ 
+### Function
+ * Hardware is asleep 
+ * User sets owl time
+ * Moving the head will trigger the wakeup command (maybe I need a switch here)
+ * Arduino checks the battery voltage if the voltage is low the LED will blink rapidly
+ * Timer waits for a few seconds before reading the potentiometer 
+ * Timer reads time value
+ * Beacon is activated for a few seconds
+ * Drive motor goes back to zero then negative whatever value was put include
+ * Drive motor goes back to set value
+ * Beacon is activated again once the timer starts
+ * Arduino goes to sleep
+ * Arduino wakes up and moves the drive motor every minute towards zero
+ * Arduino also remembers the last set value
+ * If the user adjusts the time while the timer is activated the timer will adjust the time accordingly and blink the LED to acknolegde
+ * Once the timer goes to zero owl moves 180 then -180 twice before returning to zero
+ * During this time the beacon is activated
+ * Afterwards the Arduino goes to sleep
+ 
+ 
+ 
  
  
 ### Notebook
@@ -49,3 +77,6 @@ Features
  * Idea for slip ring power for LED strobe		https://gizmoplans.com/product/wind-turbine-slip-rings/
  * Interesting page on li-po charging			https://electronics-project-hub.com/arduino-lithium-ion-battery-charger/
  * CAD for SG90 Servo							https://www.thingiverse.com/thing:787942
+ * Putting arduino to sleep with watchdog		https://learn.adafruit.com/low-power-wifi-datalogging/power-down-sleep
+ * Adjust VCC pin reading (didn't use)    		https://forum.arduino.cc/index.php?topic=435065.0 
+ * Use VCC pin to read voltage		        	https://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage/
