@@ -4,6 +4,8 @@ Notes: Design superseded by P09_00_01
 Comments: This design did not work well. The gears were not supported well and caused pinching which was too much friction for the servo. Additionally the design was somewhat restrictive in only being able to rotate 360 degrees.
 
 Description:
+This design is the first iteration of P90_00_00. It calls for one SG90 servo to control the owl head movement and one micro stepper motor for the beacon motion. With additional gearing the servo action is extended to a full 360 degrees of motion. The timer setting are directly read from the servo potentiometer.  
+
 Assembly: The parts aligned to check for interference
 BeaconLens: The red lens that covers the LED on top of the owl's head
 LEDMount: The mounting part that mates the stepper motor with the LED
