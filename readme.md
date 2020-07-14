@@ -43,13 +43,11 @@ Features
  * 2020-07-13 Possible to drive motor using battery leads
  * 2020-07-13 Remove H bridge from SG90 (117L 929 datasheet not found)
  * 2020-07-13 Mapping H bridge pins from SG90
+ * 2020-07-13 Modify owl base to accept mini USB adapter
  * 2020-07-14 Probing H bridge found working pinout still a couple unknown pins
  
 ### What's next
- * Paint beacon lens
- * Create continuous rotation servo
- * Program components
- * Print end cap (need to include programming port)
+ * Test wake up from sleep using potentiometer
  * Design layout
  * Test pro mini pins
  * Need to reduce the battery until I can find the min voltage that will drive this project
