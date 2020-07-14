@@ -37,6 +37,13 @@ Features
  * 2020-07-04 Start writing software
  * 2020-07-13 Finished 3D printing main components
  * 2020-07-13 Got the VCC readings from the pro mini
+ * 2020-07-13 Modify servo for continuous rotation 3.3kOhm resistors
+ * 2020-07-13 Testing drive servo with low battery (didn't work)
+ * 2020-07-13 Testing direct drive with Arduino pins for the servo motor (didn't work)
+ * 2020-07-13 Possible to drive motor using battery leads
+ * 2020-07-13 Remove H bridge from SG90 (117L 929 datasheet not found)
+ * 2020-07-13 Mapping H bridge pins from SG90
+ * 2020-07-14 Probing H bridge found working pinout still a couple unknown pins
  
 ### What's next
  * Paint beacon lens
@@ -72,7 +79,7 @@ Features
  
 ### Notebook
  * Battery source Li-Po, Li-ion, or Ni-Mh. Ni-Mh has a similar capacity to Li-ion and weight isn't an issue. I already have these batteries and a simple USB charger for them. Size is a little big but it can fit ore or less.  
-
+  
  * Direct control of mini stepper motor			https://www.youtube.com/watch?v=MaByP2w_vtA
  * Idea for slip ring power for LED strobe		https://gizmoplans.com/product/wind-turbine-slip-rings/
  * Interesting page on li-po charging			https://electronics-project-hub.com/arduino-lithium-ion-battery-charger/
