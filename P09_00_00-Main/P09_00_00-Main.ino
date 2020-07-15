@@ -1,103 +1,157 @@
 /*
- * void ReadSensor(): Reads the potentiometer
- * bool DeltaTime(): Checks if the head has moved (True/False)
- * void SetTime(): Sets the timer function
- * byte IntToMin(): Function that converts sensor time to minutes
+   P09_00_00-Main
+   Project: P09_00_00 OwlBuddy
+   
+   Notes:
+ * Working on switch cases
+ * Need to fill in code for MoveToZeroFine 
+ * 
+
+   Connections
+   GND   - Servo potentiometer GND
+   Pin02 - Servo potentiometer output
 */
 
+//Sleep mode (interrupt)
+#include <avr/sleep.h>
+#define WakePin 2   //Pin to indicate when the timer has been activated
+
+//Settings
+int PotMax = 900;         //Max potentiometer value
+int PotMin = 795;         //Min potentiometer value
+long MinVoltage = 5000;   //Voltage level (mV) to trigger low voltage warning
+int SetTimeDelay = 3000;  //Amount of time to wait before setting the timer
+
 //Define pins
-#define Sensor      A0	//Potentiometer
-#define SensorPWR 	A1  //Potentiometer power
-#define DriveServo  11
-#define ServoB      12
 #define LED         13  //Beacon LED
+#define Sensor      A0  //Potentiometer
+#define SensorPWR   A1  //Potentiometer power
 
 //Global variables
-int Position = 0;
-int SensorVal = 0;
-byte SetTime = 0;   //Time set by the user
-int NapTime = 0;    //Sensor time when the system takes a nap
-int WakeTime = 0;   //Sensor time when the system wakes from a nap
+byte CaseMode;
+long BatteryVoltage;
+bool LowBattery;
+int HeadPos;
+byte i;
 
-//User settings
-int SetTimeDelay = 3000; //Amount of time to wait before setting the time
-long MinVoltage = 3000; //Voltage level to trigger low voltage warning
-
-
-
-
-void setup() {
+void setup() 
+{
+  //Serial
   Serial.begin(9600);
-  
-  //Set pin mode
-  pinMode(DriveServo, OUTPUT);
-  pinMode(ServoB, OUTPUT);
-  pinMode(LED, OUTPUT);
-  pinMode(SensorPWR, OUTPUT);
-  pinMode(Sensor, INPUT);
+  Serial.println("Setup");
 
-  //Blink at setup
-  for(int i=0; i<5; i++){
+  //Check battery status
+  CheckBattery();
+
+  //Sleep mode (interrupt)
+  pinMode(WakePin,INPUT_PULLUP);  //Set internal pull up resistor
+
+  //Set default case
+  CaseMode = 0;
+
+  //General pin setup
+  pinMode(LED,OUTPUT);
+
+  //Blink at setup done
+  for(int i=0; i<5; i++)
+  {
     digitalWrite(LED,HIGH);
     delay(100);
     digitalWrite(LED,LOW);
     delay(100);
   }
-
-
 }
 
-void loop() {
-  // Routine on wake up from sleep
-  if(!CheckBattery()) //Battery voltage is low 
+
+
+void loop() 
+{
+  switch (CaseMode) 
   {
-    LowBattery();
+    case 1:
+      Serial.println("Owl is awake getting set time");
+
+      //Check for low battery
+      CheckBattery();
+
+      //Delay for setting the time 
+      //Note: If low battery a delay is already applied
+      if (!LowBattery)
+      {
+        delay(SetTimeDelay); 
+      }
+
+      //Get the time value
+      GetHeadPos();
+      Serial.println(HeadPos);
+      ConvertTime();
+      
+      CaseMode = 2;
+      break;
+    case 2:
+      Serial.println("case 2");
+      break;
+    default: 
+      Serial.println("Sleep until activated");
+      
+      //Move the head to the zero position
+      MoveToZeroFine();
+      
+      //ActivateSleep();
+      CaseMode = 1;
+      break;
+  }
+}
+//Function to convert head position to time
+void ConvertTime()
+{
+  //Delta senor for 1 min
+  double DeltaMin = (double)(PotMax - PotMin)/60;
+  Serial.println(DeltaMin);
+}
+//Function to read head position
+void GetHeadPos()
+{
+  //Turn sensor on
+  digitalWrite(SensorPWR, HIGH); 
+  delay(2);
+
+  //Read value
+  HeadPos = analogRead(Sensor);
+  
+  //Turn sensor off
+  digitalWrite(SensorPWR, LOW);
+}
+
+//Function to check for low battery
+void CheckBattery()
+{
+  //Get the battery voltage
+  BatteryVoltage = ReadVcc();
+  Serial.println(BatteryVoltage);
+
+  //Check for low power
+  if (BatteryVoltage < MinVoltage)
+  {
+    LowBattery = true;
+
+    //Blink LED to indicate low battery
+    for(i=0; i<8; i++)
+    {
+      digitalWrite(LED,HIGH);
+      delay(200);
+      digitalWrite(LED,LOW);
+      delay(200);
+    }
   }
   else
   {
-    //delay(SetTimeDelay); //Wait to set time
-    Serial.println(readVcc());
-    SensorVal = ReadSensor(); //Read the Potentiometer
-    //Serial.println(scale_constant);
-  }
-
-
-}
-
-
-
-//Function that reads the the potentiometer value
-int ReadSensor()
-{
-  digitalWrite(SensorPWR, HIGH); 
-  delay(2);
-  int result = analogRead(Sensor);
-  //Need to modify this value
-  digitalWrite(SensorPWR, LOW);
-  return result;
-}
-
-//Function that blinks the LED to indicate that the battery is low
-void LowBattery(){
-  for(int i=0; i<8; i++){
-    digitalWrite(LED,HIGH);
-    delay(200);
-    digitalWrite(LED,LOW);
-    delay(200);
+    LowBattery = false;
   }
 }
-//Function that checks the battery voltage returns true or false 
-bool CheckBattery(){
-  long BatteryVoltage = readVcc();
-  if (BatteryVoltage > MinVoltage){
-    return true;
-  }
-  else{
-    return false;
-  }
-}
+
 //Function that calculates Vcc (in mV)
-long readVcc() {
+long ReadVcc() {
   // Read 1.1V reference against AVcc
   // set the reference to Vcc and the measurement to the internal 1.1V reference
   #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
@@ -123,10 +177,45 @@ long readVcc() {
   return result; // Vcc in millivolts
 }
 
+//Function to move owl head to zero 
+void MoveToZeroFine()
+{
+  
+}
+
+//Function that activates the sleep mode (interrupt)
+void ActivateSleep()
+{
+  Serial.println("ActivateSleep");
+    
+  //Enable sleep mode
+  sleep_enable();
+
+  //Sleep mode settings
+  attachInterrupt(0, WakeUp, LOW); //0 = Pin02
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+
+  //Go to sleep
+  sleep_cpu();
+}
+
+//Interrrupt routine
+void WakeUp()
+{
+  sleep_disable();//Disable sleep mode
+  detachInterrupt(0); //0 = Pin02
+}
+
+
+
 /*
 ***** ROLL THE CREDITS *****
- * Adjust VCC pin reading (didn't use)    https://forum.arduino.cc/index.php?topic=435065.0 
- * Use VCC pin to read voltage		        https://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage/
+  >> ReadVcc <<
+  * Adjust VCC pin reading (didn't use)    https://forum.arduino.cc/index.php?topic=435065.0 
+  * Use VCC pin to read voltage            https://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage/
 
+  >> ActivateSleep <<
+  * Wake Arduino with interrupts     https://forum.arduino.cc/index.php?topic=435065.0 
+ 
 ***** Thanks everyone! *****
 */
