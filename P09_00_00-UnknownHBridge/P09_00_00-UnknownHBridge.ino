@@ -29,7 +29,7 @@ void setup() {
 }
 
 void loop() {
-  
+  TestMotor();
 }
 
 void TestMotor(){
