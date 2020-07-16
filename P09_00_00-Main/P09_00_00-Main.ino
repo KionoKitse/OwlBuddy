@@ -21,11 +21,14 @@ int PotMax = 900;         //Max potentiometer value
 int PotMin = 795;         //Min potentiometer value
 long MinVoltage = 5000;   //Voltage level (mV) to trigger low voltage warning
 int SetTimeDelay = 3000;  //Amount of time to wait before setting the timer
-
+byte ZeroTolerance = 8;   //Tolerance on positioning of owl head at zero
+byte ZeroPos = 542; //InvalidSensorA[] = {145, 939} -> ((939-145)/2)+145 = 542
+ 
 //Define pins
 #define LED         13  //Beacon LED
-#define Sensor      A0  //Potentiometer
-#define SensorPWR   A1  //Potentiometer power
+#define SensorPWR     9  //Potentiometer power
+#define SensorA      A0  //Blue wire
+#define SensorB      A1  //White wire //interrupt
 
 //Global variables
 byte CaseMode;
@@ -33,6 +36,8 @@ long BatteryVoltage;
 bool LowBattery;
 int HeadPos;
 byte i;
+int ValSensorA, ValSensorB;
+
 
 void setup() 
 {
@@ -115,13 +120,34 @@ void GetHeadPos()
   //Turn sensor on
   digitalWrite(SensorPWR, HIGH); 
   delay(2);
+  
+  //Read the sensor
+  ValSensorA = analogRead(SensorA);
+  ValSensorB = analogRead(SensorB);
 
-  //Read value
+  //Determine if SensorA is invalid
+  if((ValSensorB > InvalidSensorA[0]) && (ValSensorB < InvalidSensorA[1]))
+  {
+    Serial.println("SensorA invalid");
+  }
+  //Determine if SensorB is invalid
+  else if ((ValSensorA > InvalidSensorB[0]) && (ValSensorA < InvalidSensorB[1]))
+  {
+    Serial.println("SensorB invalid");
+  }
+  //Both sensors are valid
+  else
+  {
+    Serial.println("Both sensors valid");
+  }
+    //Read value
   HeadPos = analogRead(Sensor);
+  //Determine 
   
   //Turn sensor off
   digitalWrite(SensorPWR, LOW);
 }
+
 
 //Function to check for low battery
 void CheckBattery()
@@ -180,9 +206,53 @@ long ReadVcc() {
 //Function to move owl head to zero 
 void MoveToZeroFine()
 {
-  
+  //Note: Interrupt is on SensorA so using SensorB to set position (Switch in HW)
+  bool AtZero = false;
+
+  //Turn on power for potentiometers
+  digitalWrite(SensorPWR,HIGH);
+  while(!AtZero)
+  {
+    //Read the sensor
+    ValSensorB = analogRead(SensorB);
+
+    //Need to rotate counter clockwise
+    if(ValSensorB > (ZeroPos + ZeroTolerance))
+    {
+      StepMotor(0, 2);
+    }
+    //Need to rotate clockwise
+    else if (ValSensorB < (ZeroPos - ZeroTolerance))
+    {
+      StepMotor(1, 2);
+    }
+    //Within nominal range
+    else
+    {
+      AtZero = true;
+    }
+  }
+  digitalWrite(SensorPWR,LOW);
 }
 
+//Function to step drive motor
+void StepMotor(bool Clockwise, int Time)
+{
+  if(Clockwise)
+  {
+    digitalWrite(InA,LOW);
+    digitalWrite(InB,HIGH);
+    delay (Time);
+    digitalWrite(InB,LOW);
+  }
+  else
+  {
+    digitalWrite(InB,LOW);
+    digitalWrite(InA,HIGH);
+    delay (Time);
+    digitalWrite(InA,LOW);
+  }
+}
 //Function that activates the sleep mode (interrupt)
 void ActivateSleep()
 {

@@ -21,6 +21,8 @@ void setup() {
   Serial.begin(9600);
   pinMode(LED,OUTPUT);
   pinMode(WakePin,INPUT_PULLUP);
+  pinMode(9,OUTPUT);
+  digitalWrite(9,LOW);
 
   //Blink at setup
   Serial.println("Setup");
@@ -45,7 +47,7 @@ void loop() {
 
 void ActivateSleep(){
     Serial.println("ActivateSleep");
-    
+    delay(1000);
     //Enable sleep mode
     sleep_enable();
 
