@@ -21,12 +21,12 @@ int MaxSensorA = 995;
 int MinSensorB = 7;
 int MaxSensorB = 992;
 
-int InvalidSensorA[] = {145, 939}; //SensorB reading when SensorA is invalid (195, 889)
-int InvalidSensorB[] = {76, 869}; //SensorA reading when SensorA is invalid (126, 819)
+int InvalidSensorA[] = {2155, 2899}; //SensorB reading when SensorA is invalid
+int InvalidSensorB[] = {1110, 1850}; //SensorA reading when SensorB is invalid
 
 int LookupTable[] = 
-{543, 396, 256, 911, 788, 663, 509, 364, 221, 89, 808, 692};
-//2   2    2    1    1    1    1    1    1    1   2    2      //Sensor numbers
+{2543, 2396, 2256, 1911, 1788, 1663, 1509, 1364, 1221, 1089, 2808, 2692};
+//2    2     2     1     1     1     1     1     1     1     2     2      //Sensor numbers
 /*
 0    *   543    0  -149   -29.8
 5    *   396    0  -147   -29.4
@@ -48,7 +48,10 @@ SensorB  (110 - 975): Max
 */  
 //Global variables
 int HeadPos;
-int ValSensorA, ValSensorB;
+long ValSensorA;
+long ValSensorB;
+int ValSensor;
+byte i;
 
 void setup() 
 {
@@ -61,14 +64,166 @@ void setup()
 
 void loop() 
 {
-
-  GetHeadPos();
+  GetUnkownPos();
+  //GetHeadPos();
   //TestMotor(1);
 
   //GetHeadPos();
   //Serial.println(HeadPos);
   //TestMotor(1);
 }
+
+
+//Function to get unkonwn position 
+void GetUnkownPos()
+{
+  //int InvalidSensorA[] = {2155, 2899}; //SensorB reading when SensorA is invalid
+  //int InvalidSensorB[] = {1110, 1850}; //SensorA reading when SensorB is invalid
+
+  //Calculate the variance of 100 samples from each sensor
+  unsigned long SumA1 = 0;
+  unsigned long SumA2 = 0;
+  unsigned long SumB1 = 0;
+  unsigned long SumB2 = 0;
+  long VarA;
+  long VarB;
+  digitalWrite(SensorPWR, HIGH); 
+  for (i=0; i<100; i++)
+  {
+    //Turn sensor on
+    digitalWrite(SensorPWR, HIGH); 
+    delay(2);
+    
+    //Get sensor reading
+    ValSensorA = analogRead(SensorA)+1000;
+    ValSensorB = analogRead(SensorB)+2000;
+
+    //Turn sensor off
+    digitalWrite(SensorPWR, LOW);
+
+    //Calculate squared value Sum(X^2)
+    SumA1 = SumA1 + (ValSensorA*ValSensorA);
+    Serial.println(SumA1);
+    SumB1 = SumB1 + (ValSensorB*ValSensorB);
+
+    //Calculate sum value
+    SumA2 = SumA2 + ValSensorA;
+    SumB2 = SumB2 + ValSensorB; 
+
+    //Print
+    Serial.print(ValSensorA);
+    Serial.print(",");
+    Serial.println(ValSensorB);
+  }
+
+  //Square sum2
+  SumA2 = SumA2*SumA2;
+  SumB2 = SumB2*SumB2;
+
+  //Finish math
+  SumA2 = SumA2/100;
+  SumA2 = SumA2/100;
+  VarA = SumA1 - SumA2;
+  VarB = SumB1 - SumB2;
+
+  Serial.println("");
+  Serial.print(SumA1);
+  Serial.print(",");
+  Serial.println(SumA2);
+  Serial.println("");
+  
+  Serial.println("");
+  Serial.print(VarA);
+  Serial.print(",");
+  Serial.println(VarB);
+  Serial.println("");
+
+  delay(1000);
+  
+
+}
+
+bool SensorValid(int Value, int Limits[2])
+{
+  if ((Value < Limits[0]) && (Value > Limits[0]))
+  {
+    return true;
+  }
+  return false;
+}
+
+
+//Function to get the set time
+byte GetSetTime(){
+  //Serial.println("Get set time");
+  bool Both = 0;
+
+  //Turn sensor on
+  digitalWrite(SensorPWR, HIGH); 
+  delay(2);
+  
+  //Read the sensor
+  ValSensorA = analogRead(SensorA)+1000;
+  ValSensorB = analogRead(SensorB)+2000;
+
+  
+
+  //Turn sensor off
+  digitalWrite(SensorPWR, LOW); 
+
+  //Determine if SensorA is invalid
+  if((ValSensorB > InvalidSensorA[0]) && (ValSensorB < InvalidSensorA[1]))
+  {
+    ValSensor = ValSensorB;
+  }
+  //Determine if SensorB is invalid
+  else if ((ValSensorA > InvalidSensorB[0]) && (ValSensorA < InvalidSensorB[1]))
+  {
+    ValSensor = ValSensorA;
+  }
+  //Both sensors are valid select the one that is farthest from it's limits
+  else
+  {
+    Both = 1;
+    //Distance to limits
+    int DeltaA = DeltaLimits(ValSensorA, InvalidSensorB);
+    int DeltaB = DeltaLimits(ValSensorB, InvalidSensorA);
+   
+    //Select sensor that is farthest from it's limits
+    if (DeltaA > DeltaB)
+    {
+      ValSensor = ValSensorA;
+    }
+    else
+    {
+      ValSensor = ValSensorB;
+    }
+  }
+  Serial.print(ValSensorA);
+  Serial.print(",");
+  Serial.print(ValSensorB);
+  Serial.print(": ");
+  Serial.print(ValSensor);
+  Serial.print(" ");
+  Serial.println(Both);
+}
+
+
+//Function to measure min distace to limits
+int DeltaLimits (int Value, int Limits[2])
+{
+  int DeltaL = abs(Value-Limits[0]);
+  int DeltaR = abs(Value-Limits[1]);
+  if (DeltaL > DeltaR)
+  {
+    return DeltaR;
+  }
+  else
+  {
+    return DeltaL;
+  }
+}
+
 
 //Function to read head position
 void GetHeadPos()
@@ -84,38 +239,48 @@ void GetHeadPos()
   Serial.print(ValSensorA);
   Serial.print(",");
   Serial.println(ValSensorB);
-  delay(100);
 
-  //0  (~,514)
-  //> (1013,300)
-  //90 (827, 53)
-  //> (704,36)
-  //180 (500,~)
-  //> 223,1013
-  //270 (47, 892)
-  //> (18,750)
-  
-  /*
+  bool ActiveSensor;
 
   //Determine if SensorA is invalid
   if((ValSensorB > InvalidSensorA[0]) && (ValSensorB < InvalidSensorA[1]))
   {
     Serial.println("SensorA invalid");
+    ValSensor = ValSensorB;
+    ActiveSensor = 1;
   }
   //Determine if SensorB is invalid
   else if ((ValSensorA > InvalidSensorB[0]) && (ValSensorA < InvalidSensorB[1]))
   {
     Serial.println("SensorB invalid");
+    ValSensor = ValSensorA;
+    ActiveSensor = 0;
   }
-  //Both sensors are valid
+  //Both sensors are valid select the one that is farthest from it's limits
   else
   {
     Serial.println("Both sensors valid");
-  }
-    //Read value
-  HeadPos = analogRead(Sensor);
-  //Determine 
-  */
+	
+  	//Distance to limits
+  	int DeltaA = DeltaLimits(ValSensorA, InvalidSensorB);
+    int DeltaB = DeltaLimits(ValSensorB, InvalidSensorA);
+   
+  	//Select sensor that is farthest from it's limits
+  	if (DeltaA > DeltaB)
+    {
+      ValSensor = ValSensorA;
+      ActiveSensor = 0;
+    }
+    else
+    {
+      ValSensor = ValSensorB;
+      ActiveSensor = 1;
+    }
+}
+  
+
+
+
   //Turn sensor off
   digitalWrite(SensorPWR, LOW);
 }
