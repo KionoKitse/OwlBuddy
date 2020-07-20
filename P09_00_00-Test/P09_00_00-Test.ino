@@ -14,19 +14,22 @@
 #define SensorA      A0  //Blue wire
 #define SensorB      A1  //White wire //interrupt
 #define SensorPWR   9  //Potentiometer power
-
+#define LED         13
 //Settings 
 int MinSensorA = 12;
 int MaxSensorA = 995;
 int MinSensorB = 7;
 int MaxSensorB = 992;
 
-int InvalidSensorA[] = {2155, 2899}; //SensorB reading when SensorA is invalid
+int InvalidSensorA[] = {2155, 2900}; //SensorB reading when SensorA is invalid
 int InvalidSensorB[] = {1110, 1850}; //SensorA reading when SensorB is invalid
 
-int LookupTable[] = 
-{2543, 2396, 2256, 1911, 1788, 1663, 1509, 1364, 1221, 1089, 2808, 2692};
-//2    2     2     1     1     1     1     1     1     1     2     2      //Sensor numbers
+int ValidSensorA[] = {1020, 1990};
+int ValidSensorB[] = {2020, 2990};
+
+
+int TimeTable[60] = {2505,2482,2462,2433,2408,2375,2337,2308,2278,2247,2207,2189,1970,1953,1928,1898,1874,1852,1825,1797,1773,1745,1718,1691,1667,1638,1614,1591,1559,1517,1486,1447,1425,1397,1365,1338,1303,1277,1252,1223,1184,1156,1130,1110,1086,1059,1029,2882,2858,2831,2800,2774,2751,2722,2697,2673,2644,2619,2593,2562};
+
 /*
 0    *   543    0  -149   -29.8
 5    *   396    0  -147   -29.4
@@ -52,6 +55,8 @@ long ValSensorA;
 long ValSensorB;
 int ValSensor;
 byte i;
+bool StableA;
+bool StableB;
 
 void setup() 
 {
@@ -64,31 +69,110 @@ void setup()
 
 void loop() 
 {
-  GetUnkownPos();
-  //GetHeadPos();
-  //TestMotor(1);
-
-  //GetHeadPos();
-  //Serial.println(HeadPos);
-  //TestMotor(1);
+  CalibrateTimer();
 }
 
+void CalibrateTimer()
+{
+  byte Position = 0;
+  Serial.print("Move to Zero ");
+  delay(5000);
+  for (int i=0; i<60; i++)
+  {
+     Serial.print("Move to position: ");
+     Serial.print(Position);
+     Serial.print(": ");
+     delay(5000);
+
+     TimeTable[i] = GetUnkownPos();
+     digitalWrite(LED,HIGH);
+     delay(100);
+     digitalWrite(LED,LOW);
+     
+     Position++;
+  }
+  Serial.println("");
+  for(int i=0; i<60; i++)
+  {
+    Serial.print(TimeTable[i]);
+    Serial.print(" ");
+  }
+  Serial.println("");
+ 
+}
 
 //Function to get unkonwn position 
-void GetUnkownPos()
+int GetUnkownPos()
 {
-  //int InvalidSensorA[] = {2155, 2899}; //SensorB reading when SensorA is invalid
-  //int InvalidSensorB[] = {1110, 1850}; //SensorA reading when SensorB is invalid
-
-  //Calculate the variance of 100 samples from each sensor
-  unsigned long SumA1 = 0;
-  unsigned long SumA2 = 0;
-  unsigned long SumB1 = 0;
-  unsigned long SumB2 = 0;
-  long VarA;
-  long VarB;
+  int pos;
+  //Turn sensor on
   digitalWrite(SensorPWR, HIGH); 
-  for (i=0; i<100; i++)
+  delay(2);
+    
+  //Get sensor reading
+  ValSensorA = analogRead(SensorA)+1000;
+  ValSensorB = analogRead(SensorB)+2000;
+
+  //Turn sensor off
+  digitalWrite(SensorPWR, LOW);
+
+  Serial.print(ValSensorA);
+  Serial.print(",");
+  Serial.print(ValSensorB);
+  Serial.print(": ");
+
+  //Check for valid readings
+  bool SensorAValid = SensorValid(ValSensorA, ValidSensorA);
+  bool SensorBValid = SensorValid(ValSensorB, ValidSensorB);
+
+  //Check reading stability
+  if(SensorAValid && SensorBValid)
+  {
+    StableA = true;
+    StableB = true;
+    CheckStable();
+    CheckStable();
+    
+    if (StableA && StableB)
+    {
+      Serial.print("Stable ");
+      pos = ValSensorA;
+    }
+    else if (StableA)
+    {
+      pos = ValSensorA;
+    }
+    else 
+    {
+      pos = ValSensorB;
+    }
+  }
+  else if (SensorAValid)
+  {
+    pos = ValSensorA;
+  }
+  else
+  {
+    pos = ValSensorB;
+  }
+  Serial.println(pos);
+  return pos;
+
+
+
+  //delay(100);
+  
+
+}
+
+void CheckStable()
+{
+  
+  
+  //Calculate the average for 10 samples
+  unsigned int TotalA = 0;
+  unsigned int TotalB = 0;
+  for (i=0; i<10; i++)
   {
     //Turn sensor on
     digitalWrite(SensorPWR, HIGH); 
@@ -101,51 +185,35 @@ void GetUnkownPos()
     //Turn sensor off
     digitalWrite(SensorPWR, LOW);
 
-    //Calculate squared value Sum(X^2)
-    SumA1 = SumA1 + (ValSensorA*ValSensorA);
-    Serial.println(SumA1);
-    SumB1 = SumB1 + (ValSensorB*ValSensorB);
-
-    //Calculate sum value
-    SumA2 = SumA2 + ValSensorA;
-    SumB2 = SumB2 + ValSensorB; 
-
-    //Print
-    Serial.print(ValSensorA);
-    Serial.print(",");
-    Serial.println(ValSensorB);
+    //Calculate the sum
+    TotalA = TotalA + ValSensorA;
+    TotalB = TotalB + ValSensorB;
   }
 
-  //Square sum2
-  SumA2 = SumA2*SumA2;
-  SumB2 = SumB2*SumB2;
+  //Calculate theoretical total
+  unsigned int TotalATheo = 10*ValSensorA;
+  unsigned int TotalBTheo = 10*ValSensorB;
 
-  //Finish math
-  SumA2 = SumA2/100;
-  SumA2 = SumA2/100;
-  VarA = SumA1 - SumA2;
-  VarB = SumB1 - SumB2;
+  int DeltaA = TotalATheo - TotalA;
+  int DeltaB = TotalBTheo - TotalB;
+  DeltaA = abs(DeltaA);
+  DeltaB = abs(DeltaB);
 
-  Serial.println("");
-  Serial.print(SumA1);
-  Serial.print(",");
-  Serial.println(SumA2);
-  Serial.println("");
-  
-  Serial.println("");
-  Serial.print(VarA);
-  Serial.print(",");
-  Serial.println(VarB);
-  Serial.println("");
-
-  delay(1000);
-  
+  //Determine which reading is valid
+  if (DeltaA > 11)
+  {
+    StableA = false;
+  }
+  if (DeltaB > 11)
+  {
+    StableB = false;
+  }
 
 }
 
 bool SensorValid(int Value, int Limits[2])
 {
-  if ((Value < Limits[0]) && (Value > Limits[0]))
+  if ((Value > Limits[0]) && (Value < Limits[1]))
   {
     return true;
   }
