@@ -2,22 +2,30 @@
  P09_00_00-SleepMode
  Project: P09_00_00 OwlBuddy
 */
+
 //Sleep mode
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/wdt.h>
 volatile bool f_wdt=1;
 
+//Global variables (General)
+byte i;
+bool Nap;
+byte SetTime;
 
-void setup() {
-  Serial.begin(115200);
-  for (int i=0; i<5; i++)
-  {
-    Serial.println(" ");
-  }
-  Serial.println("Setup");
-  delay(100);
+//Global variables (Nap mode)
+int CyclesToNap;
+int DelayToNap;
+long Time1;
+long Time2;
 
+void setup() 
+{
+  //Serial
+  Serial.begin(9600);
+  Serial.println("");
+  
   //Configure watchdog
   MCUSR &= ~(1<<WDRF); 
   WDTCSR |= (1<<WDCE) | (1<<WDE);
@@ -25,31 +33,56 @@ void setup() {
   WDTCSR |= _BV(WDIE);
 }
 
-void loop() {
-  SleepMode(17000);
-  Serial.println("17000");
 
-  
+
+void loop() 
+{
+  Serial.println(""); 
+  SetTime = 1;
+  byte RemainingTime = SetTime;
+  Time1 = millis();
+  Time2 = millis();
+  int NapTime;
+  Serial.println("Start");
+  delay(200);
+  while (RemainingTime > 0)
+  {
+    //Adjust 1 min nap time to take into consideration time spent moving the head
+    NapTime = 60*1000-(Time2-Time1);
+    
+    //Sleep 1 min
+    TakeNap(NapTime);
+    Time1 = millis();
+
+    //Adjust remaining time
+    RemainingTime --;
+    
+    //Move head 
+
+    Time2 = millis();
+  }
+  Serial.println("Stop");
 }
-//Funcnction to be in sleep mode
-void SleepMode(unsigned int TimeMs){
-  
-  //Determine cycles to sleep 
-  byte CyclesToSleep  = TimeMs/8000;
-  int RemainderTime = TimeMs - CyclesToSleep*8000;
+
+void TakeNap(unsigned int TimeMs){
+  //Convert time in ms to number of 8sec blocks and delay
+  byte Cycles = TimeMs/8000;
+  int NapDelay = TimeMs - 8000*Cycles;
+  //Serial.println(Cycles);
+  //Serial.println(NapDelay);
 
   //Enter sleep mode for the number of cycles required
   bool KeepSleeping = true;
-  volatile byte SleepCycles = 0;
+  volatile byte NapCycles = 0;
   while (KeepSleeping)
   {
     //Watchdog just woke up
     if(f_wdt == 1)
     {
       //Check if it's time to wake up
-      if (SleepCycles < CyclesToSleep)
+      if (NapCycles < Cycles)
       {
-        SleepCycles++;
+        NapCycles++;
       }
       else
       {
@@ -60,16 +93,18 @@ void SleepMode(unsigned int TimeMs){
       f_wdt = 0;
       
       //Re-enter sleep mode.
-      enterSleep();
+      enterNap();
     }
   }
   //Delay for the remainder of the time
-  delay(RemainderTime);
-  
+  delay(NapDelay); 
+  Time1 = millis();
 }
-//Watchdog Interrupt Service. This is executed when watchdog timed out.
-ISR(WDT_vect)
-{
+
+
+
+
+ISR(WDT_vect){                          //Watchdog Interrupt Service. This is executed when watchdog timed out.
   if(!f_wdt)
   {
     f_wdt=true;
@@ -79,10 +114,7 @@ ISR(WDT_vect)
     Serial.println("WDT Overrun!!!");
   }
 }
-
-//Enters the arduino into sleep mode.
-void enterSleep(void)
-{
+void enterNap(void){                    //Routine for entering sleep mode
   //Set sleep mode
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);   
   sleep_enable();
@@ -92,10 +124,8 @@ void enterSleep(void)
   
   //After waking up disable the sleep mode
   sleep_disable(); 
-  
-  // Re-enable the peripherals
-  //power_all_enable();
 }
+
 
 /*
 ***** ROLL THE CREDITS *****

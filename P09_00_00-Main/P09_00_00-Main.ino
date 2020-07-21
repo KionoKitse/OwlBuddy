@@ -17,8 +17,6 @@
 #define WakePin 2   //Pin to indicate when the timer has been activated
 
 //Settings
-int PotMax = 900;         //Max potentiometer value
-int PotMin = 795;         //Min potentiometer value
 long MinVoltage = 5000;   //Voltage level (mV) to trigger low voltage warning
 int SetTimeDelay = 3000;  //Amount of time to wait before setting the timer
 byte ZeroTolerance = 8;   //Tolerance on positioning of owl head at zero
@@ -29,18 +27,35 @@ byte ZeroPos = 542; //InvalidSensorA[] = {145, 939} -> ((939-145)/2)+145 = 542
 #define SensorPWR     9  //Potentiometer power
 #define SensorA      A0  //Blue wire
 #define SensorB      A1  //White wire //interrupt
+#define DriveA       10  //Drive motor H bridge brown
+#define DriveB       11  //Drive motot H bridge purple
 
-//Global variables
+//Global variables (General)
 byte CaseMode;
+int HeadPos;
+int SetTime;
+byte i;
+bool Sleeping;
+
+//Global variables (Potentiometer Functions)
+int ValSensorA;
+int ValSensorB;
+bool StableA;
+bool StableB;
+
+//Global variables (Battery Control Functions)
 long BatteryVoltage;
 bool LowBattery;
-int HeadPos;
-byte i;
-int ValSensorA, ValSensorB;
+
+//Potentiometer Calibration
+int ValidSensorA[] = {1020, 1990};
+int ValidSensorB[] = {2020, 2990};
+double Slope = -0.03472536;
+double Intercept = 87.37676476;
+int OffsetSensorA = 170;
 
 
-void setup() 
-{
+void setup() {
   //Serial
   Serial.begin(9600);
   Serial.println("Setup");
@@ -54,8 +69,13 @@ void setup()
   //Set default case
   CaseMode = 0;
 
+  //Apply sensor offset
+  ValidSensorA[0] = ValidSensorA[0]+OffsetSensorA;
+  ValidSensorA[1] = ValidSensorA[1]+OffsetSensorA;
+
   //General pin setup
   pinMode(LED,OUTPUT);
+  pinMode(SensorPWR,OUTPUT);
 
   //Blink at setup done
   for(int i=0; i<5; i++)
@@ -69,13 +89,13 @@ void setup()
 
 
 
-void loop() 
-{
+void loop() {
   switch (CaseMode) 
   {
     case 1:
-      Serial.println("Owl is awake getting set time");
+      //Serial.println("Owl is awake getting set time");
 
+      
       //Check for low battery
       CheckBattery();
 
@@ -85,122 +105,33 @@ void loop()
       {
         delay(SetTimeDelay); 
       }
-
-      //Get the time value
-      GetHeadPos();
-      Serial.println(HeadPos);
-      ConvertTime();
+      
+      //Get the time value based on unknown position
+      HeadPos = GetUnkownPos();
+      SetTime = Pos2Time(HeadPos);
+      Serial.print("Set Timer: ");
+      Serial.println(SetTime);
       
       CaseMode = 2;
       break;
     case 2:
-      Serial.println("case 2");
+      Serial.println("Sleep until time is up");
+      Sleeping = true;
+      while (Sleeping)
+      {
+        
+      }
       break;
     default: 
       Serial.println("Sleep until activated");
       
       //Move the head to the zero position
-      MoveToZeroFine();
+      //MoveToZeroFine(); //TODO
       
       //ActivateSleep();
       CaseMode = 1;
       break;
   }
-}
-//Function to convert head position to time
-void ConvertTime()
-{
-  //Delta senor for 1 min
-  double DeltaMin = (double)(PotMax - PotMin)/60;
-  Serial.println(DeltaMin);
-}
-//Function to read head position
-void GetHeadPos()
-{
-  //Turn sensor on
-  digitalWrite(SensorPWR, HIGH); 
-  delay(2);
-  
-  //Read the sensor
-  ValSensorA = analogRead(SensorA);
-  ValSensorB = analogRead(SensorB);
-
-  //Determine if SensorA is invalid
-  if((ValSensorB > InvalidSensorA[0]) && (ValSensorB < InvalidSensorA[1]))
-  {
-    Serial.println("SensorA invalid");
-  }
-  //Determine if SensorB is invalid
-  else if ((ValSensorA > InvalidSensorB[0]) && (ValSensorA < InvalidSensorB[1]))
-  {
-    Serial.println("SensorB invalid");
-  }
-  //Both sensors are valid
-  else
-  {
-    Serial.println("Both sensors valid");
-  }
-    //Read value
-  HeadPos = analogRead(Sensor);
-  //Determine 
-  
-  //Turn sensor off
-  digitalWrite(SensorPWR, LOW);
-}
-
-
-//Function to check for low battery
-void CheckBattery()
-{
-  //Get the battery voltage
-  BatteryVoltage = ReadVcc();
-  Serial.println(BatteryVoltage);
-
-  //Check for low power
-  if (BatteryVoltage < MinVoltage)
-  {
-    LowBattery = true;
-
-    //Blink LED to indicate low battery
-    for(i=0; i<8; i++)
-    {
-      digitalWrite(LED,HIGH);
-      delay(200);
-      digitalWrite(LED,LOW);
-      delay(200);
-    }
-  }
-  else
-  {
-    LowBattery = false;
-  }
-}
-
-//Function that calculates Vcc (in mV)
-long ReadVcc() {
-  // Read 1.1V reference against AVcc
-  // set the reference to Vcc and the measurement to the internal 1.1V reference
-  #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
-    ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-  #elif defined (__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
-    ADMUX = _BV(MUX5) | _BV(MUX0);
-  #elif defined (__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
-    ADMUX = _BV(MUX3) | _BV(MUX2);
-  #else
-    ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-  #endif  
-
-  delay(2); // Wait for Vref to settle
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA,ADSC)); // measuring
-
-  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH  
-  uint8_t high = ADCH; // unlocks both
-
-  long result = (high<<8) | low;
-
-  result = 1142437L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
-  return result; // Vcc in millivolts
 }
 
 //Function to move owl head to zero 
@@ -235,27 +166,208 @@ void MoveToZeroFine()
   digitalWrite(SensorPWR,LOW);
 }
 
+//>>>DONE<<<
+
+
 //Function to step drive motor
 void StepMotor(bool Clockwise, int Time)
 {
   if(Clockwise)
   {
-    digitalWrite(InA,LOW);
-    digitalWrite(InB,HIGH);
+    digitalWrite(DriveA,LOW);
+    digitalWrite(DriveB,HIGH);
     delay (Time);
-    digitalWrite(InB,LOW);
+    digitalWrite(DriveB,LOW);
   }
   else
   {
-    digitalWrite(InB,LOW);
-    digitalWrite(InA,HIGH);
+    digitalWrite(DriveB,LOW);
+    digitalWrite(DriveA,HIGH);
     delay (Time);
-    digitalWrite(InA,LOW);
+    digitalWrite(DriveA,LOW);
   }
 }
-//Function that activates the sleep mode (interrupt)
-void ActivateSleep()
-{
+
+// >> Potentiometer Functions << 
+int Pos2Time(int Position){                 //Convert sensor position to time
+  //Calculate time based on position to time equation
+  double Time = Slope*Position+Intercept;
+
+  //Round values to an integer
+  int Result = round(Time);
+
+  //Check for wrap around values
+  if(Result < 0)
+  {
+    Result = Result+60; 
+  }
+
+  return Result;
+}
+int GetUnkownPos(){                         //Get unknown position
+  int Position;
+  //Turn sensor on
+  digitalWrite(SensorPWR, HIGH); 
+  delay(2);
+    
+  //Get sensor reading
+  ValSensorA = analogRead(SensorA)+1000+OffsetSensorA;
+  ValSensorB = analogRead(SensorB)+2000;
+
+  //Turn sensor off
+  digitalWrite(SensorPWR, LOW);
+
+  //Serial.print(ValSensorA);
+  //Serial.print(",");
+  //Serial.print(ValSensorB);
+  //Serial.print(": ");
+
+  //Check for valid readings
+  bool SensorAValid = SensorValid(ValSensorA, ValidSensorA);
+  bool SensorBValid = SensorValid(ValSensorB, ValidSensorB);
+
+  //Check reading stability if both readings are valid
+  if(SensorAValid && SensorBValid)
+  {
+    StableA = true;
+    StableB = true;
+    CheckStable();
+    CheckStable();
+
+    //Both readings are actually stable use SensorA
+    if (StableA && StableB)
+    {
+      //Serial.print("Stable ");
+      Position = ValSensorA;
+    }
+    //Sensor B was unstable so use SensorA
+    else if (StableA)
+    {
+      Position = ValSensorA;
+    }
+    //SensorA was unstable so use SensorB
+    else 
+    {
+      Position = ValSensorB;
+    }
+  }
+  //SensorB was unstable so use SensorA
+  else if (SensorAValid)
+  {
+    Position = ValSensorA;
+  }
+  //SensorA was unstable so use SensorB
+  else
+  {
+    Position = ValSensorB;
+  }
+  
+  //Serial.println(Position);
+  return Position;
+}
+bool SensorValid(int Value, int Limits[2]){ //Check if sensor reading is valid
+  if ((Value > Limits[0]) && (Value < Limits[1]))
+  {
+    return true;
+  }
+  return false;
+}
+void CheckStable(){                         //Check stability of sensors over 10 readings
+  //Calculate the sum of 10 measurements
+  unsigned int TotalA = 0;
+  unsigned int TotalB = 0;
+  for (i=0; i<10; i++)
+  {
+    //Turn sensor on
+    digitalWrite(SensorPWR, HIGH); 
+    delay(2);
+    
+    //Get sensor reading
+    ValSensorA = analogRead(SensorA)+1000+OffsetSensorA;
+    ValSensorB = analogRead(SensorB)+2000;
+
+    //Turn sensor off
+    digitalWrite(SensorPWR, LOW);
+
+    //Calculate the sum
+    TotalA = TotalA + ValSensorA;
+    TotalB = TotalB + ValSensorB;
+  }
+
+  //Calculate theoretical total
+  unsigned int TotalATheo = 10*ValSensorA;
+  unsigned int TotalBTheo = 10*ValSensorB;
+
+  //Determine how much the actual total and the theoretical total differ
+  int DeltaA = TotalATheo - TotalA;
+  int DeltaB = TotalBTheo - TotalB;
+  DeltaA = abs(DeltaA);
+  DeltaB = abs(DeltaB);
+
+  //Determine which reading is valid
+  if (DeltaA > 11)
+  {
+    StableA = false;
+  }
+  if (DeltaB > 11)
+  {
+    StableB = false;
+  }
+}
+
+// >> Battery Control Functions <<
+void CheckBattery(){                        //Check for low battery
+  //Get the battery voltage
+  BatteryVoltage = ReadVcc();
+  Serial.println(BatteryVoltage);
+
+  //Check for low power
+  if (BatteryVoltage < MinVoltage)
+  {
+    LowBattery = true;
+
+    //Blink LED to indicate low battery
+    for(i=0; i<8; i++)
+    {
+      digitalWrite(LED,HIGH);
+      delay(200);
+      digitalWrite(LED,LOW);
+      delay(200);
+    }
+  }
+  else
+  {
+    LowBattery = false;
+  }
+}
+long ReadVcc() {                            //Calculate Vcc (in mV)
+  // Read 1.1V reference against AVcc
+  // set the reference to Vcc and the measurement to the internal 1.1V reference
+  #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+    ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  #elif defined (__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
+    ADMUX = _BV(MUX5) | _BV(MUX0);
+  #elif defined (__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+    ADMUX = _BV(MUX3) | _BV(MUX2);
+  #else
+    ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  #endif  
+
+  delay(2); // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Start conversion
+  while (bit_is_set(ADCSRA,ADSC)); // measuring
+
+  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH  
+  uint8_t high = ADCH; // unlocks both
+
+  long result = (high<<8) | low;
+
+  result = 1142437L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
+  return result; // Vcc in millivolts
+}
+
+// >> Sleep Functions <<
+void ActivateSleep(){                       //Activate the sleep mode (interrupt)
   Serial.println("ActivateSleep");
     
   //Enable sleep mode
@@ -268,15 +380,10 @@ void ActivateSleep()
   //Go to sleep
   sleep_cpu();
 }
-
-//Interrrupt routine
-void WakeUp()
-{
+void WakeUp(){                              //Interrrupt routine
   sleep_disable();//Disable sleep mode
   detachInterrupt(0); //0 = Pin02
 }
-
-
 
 /*
 ***** ROLL THE CREDITS *****
