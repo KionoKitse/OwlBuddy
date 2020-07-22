@@ -14,6 +14,10 @@
 byte i;
 bool Nap;
 
+//Global variables (Movement)
+bool ActiveSensor; //AorB
+
+
 //Potentiometer Calibration
 int ValidSensorA[] = {1020, 1990};
 int ValidSensorB[] = {2020, 2990};
@@ -65,19 +69,25 @@ void loop()
 
 void Move2TimeKnown(int Time, bool Clockwise)
 {
+  
   //Determine read sensor
+  byte ReadSensor; //SensorA, SensorB, SensorAB
   if (Time > 12 && Time < 46)
   {
     Serial.println("SensorA");
+    ReadSensor = 0;
   }
   else if (Time > 47 || Time < 11)
   {
     Serial.println("SensorB");
+    ReadSensor = 1;
   }
   else // 11-12 && 46-47
   {
     Serial.println("Both");
+    ReadSensor = 2;
   }
+  
   //Convert time for wrap around values
   if (Time > 46)
   {
@@ -86,6 +96,11 @@ void Move2TimeKnown(int Time, bool Clockwise)
   
   //Calculate head position
   int Position = round((Time - Intercept)/Slope);
+
+  //Now I have a sensor number and an expected stop value
+  //Check for sensor transitions
+  
+  
 
   //Determine read sensor
   

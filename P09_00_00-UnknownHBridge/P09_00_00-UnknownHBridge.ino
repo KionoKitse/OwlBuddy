@@ -20,8 +20,8 @@
   * BD621x (VCC 3-5.5V) (In 2-?V) 
 */
 //Define pins
-#define InA  10 //Green
-#define InB  11 //Red
+#define InA  10 //White InB
+#define InB  11 //Blue InA
 
 void setup() {
   Serial.begin(9600);

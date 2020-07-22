@@ -27,8 +27,8 @@ byte ZeroPos = 542; //InvalidSensorA[] = {145, 939} -> ((939-145)/2)+145 = 542
 #define SensorPWR     9  //Potentiometer power
 #define SensorA      A0  //Blue wire
 #define SensorB      A1  //White wire //interrupt
-#define DriveA       10  //Drive motor H bridge brown
-#define DriveB       11  //Drive motot H bridge purple
+#define DriveA       10  //Drive motor H bridge White 3
+#define DriveB       11  //Drive motot H bridge Blue 4
 
 //Global variables (General)
 byte CaseMode;
@@ -95,7 +95,7 @@ void loop() {
     case 1:
       //Serial.println("Owl is awake getting set time");
 
-      
+      /*
       //Check for low battery
       CheckBattery();
 
@@ -105,6 +105,7 @@ void loop() {
       {
         delay(SetTimeDelay); 
       }
+      */
       
       //Get the time value based on unknown position
       HeadPos = GetUnkownPos();
@@ -112,7 +113,7 @@ void loop() {
       Serial.print("Set Timer: ");
       Serial.println(SetTime);
       
-      CaseMode = 2;
+      //CaseMode = 2;
       break;
     case 2:
       Serial.println("Sleep until time is up");
@@ -128,7 +129,7 @@ void loop() {
       //Move the head to the zero position
       //MoveToZeroFine(); //TODO
       
-      //ActivateSleep();
+      ActivateSleep();
       CaseMode = 1;
       break;
   }
@@ -369,6 +370,7 @@ long ReadVcc() {                            //Calculate Vcc (in mV)
 // >> Sleep Functions <<
 void ActivateSleep(){                       //Activate the sleep mode (interrupt)
   Serial.println("ActivateSleep");
+  delay(200);
     
   //Enable sleep mode
   sleep_enable();
