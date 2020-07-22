@@ -13,8 +13,12 @@
 //Global variables (General)
 byte i;
 bool Nap;
+byte TimePos;
+byte SensorNumber;
+int  SensorValue;
 
 //Global variables (Movement)
+byte HeadTime; //Last know position of the head (time)
 bool ActiveSensor; //AorB
 
 
@@ -24,6 +28,7 @@ int ValidSensorB[] = {2020, 2990};
 double Slope = -0.03472536;
 double Intercept = 87.37676476;
 int OffsetSensorA = 170;
+byte TimeSensorA[] = {12,47};
 
 void setup() 
 {
@@ -69,6 +74,15 @@ void loop()
 
 void Move2TimeKnown(int Time, bool Clockwise)
 {
+  
+  HeadTime
+  //Path variables
+  byte SensorPath[6];
+  int PositionPath[6];
+  byte PathLength;
+  
+  //Chart movement path
+  
   
   //Determine read sensor
   byte ReadSensor; //SensorA, SensorB, SensorAB
