@@ -17,7 +17,7 @@
 #define WakePin 2   //Pin to indicate when the timer has been activated
 
 //Settings
-long MinVoltage = 5000;   //Voltage level (mV) to trigger low voltage warning
+long MinVoltage = 3000;   //Voltage level (mV) to trigger low voltage warning dead at 2.8V
 int SetTimeDelay = 3000;  //Amount of time to wait before setting the timer
 byte ZeroTolerance = 8;   //Tolerance on positioning of owl head at zero
 byte ZeroPos = 542; //InvalidSensorA[] = {145, 939} -> ((939-145)/2)+145 = 542
@@ -111,9 +111,9 @@ void loop() {
       
       //Get the time value based on unknown position
       GetUnkownPos();
-      SetTime = Pos2Time(SensorValue);
-      Serial.print("Set Timer: ");
-      Serial.println(SetTime);
+      //SetTime = Pos2Time(SensorValue);
+      //Serial.print("Set Timer: ");
+      //Serial.println(SetTime);
       
       //CaseMode = 2;
       break;
@@ -126,13 +126,13 @@ void loop() {
       }
       break;
     default: 
-      Serial.println("Sleep until activated");
-      
+      //Serial.println("Sleep until activated");
+      GetUnkownPos();
       //Move the head to the zero position
       //MoveToZeroFine(); //TODO
       
-      //ActivateSleep();
-      //CaseMode = 1;
+      ActivateSleep();
+      CaseMode = 1;
       break;
   }
 }
@@ -213,16 +213,16 @@ void GetUnkownPos() {                         //Get unknown position
   delay(2);
 
   //Get sensor reading
-  ValSensorA = analogRead(SensorA) + 1000 + OffsetSensorA;
-  ValSensorB = analogRead(SensorB) + 2000;
+  ValSensorA = analogRead(SensorA);// + 1000 + OffsetSensorA;
+  ValSensorB = analogRead(SensorB);// + 2000;
 
   //Turn sensor off
   digitalWrite(SensorPWR, LOW);
 
-  //Serial.print(ValSensorA);
-  //Serial.print(",");
-  //Serial.print(ValSensorB);
-  //Serial.print(": ");
+  Serial.print(ValSensorA);
+  Serial.print(",");
+  Serial.print(ValSensorB);
+  Serial.print(": ");
 
   //Check for valid readings
   bool SensorAValid = SensorValid(ValSensorA, ValidSensorA);
@@ -269,7 +269,7 @@ void GetUnkownPos() {                         //Get unknown position
     SensorNumber = 2;
   }
 
-  //Serial.println(SensorValue);
+  Serial.println(SensorValue);
 }
 bool SensorValid(int Value, int Limits[2]) {  //Check if sensor reading is valid
   if ((Value > Limits[0]) && (Value < Limits[1]))

@@ -117,7 +117,7 @@ void Calibration() {
     }
   }
 
-  /*
+  
   //Print results
   Serial.println("SensorA");
   for (byte i = 0; i < CountSensorA; i++)
@@ -133,7 +133,7 @@ void Calibration() {
     Serial.print(",");
     Serial.println(XYSensorB[i][1]);
   }
-  */
+  
 
   //Find the wrap around value for SensorB
   for (byte i = CountSensorB; i > 0; i--)
@@ -149,7 +149,7 @@ void Calibration() {
     }
   }
 
-  /*
+  
   //Print results
   Serial.println("Modified SensorB data");
   for (byte i = 0; i < CountSensorB; i++)
@@ -159,7 +159,7 @@ void Calibration() {
     Serial.println(XYSensorB[i][1]);
   }
   Serial.println(WrapAroundVal);
-  */
+  
   
   //Line fit sensor data
   double SensorALine[2];
@@ -168,8 +168,9 @@ void Calibration() {
   LineFitLSR(XYSensorB,SensorBLine,CountSensorB);
 
   //Calculate SensorA offset
-  OffsetSensorA = round(SensorBLine[1]-SensorALine[1]);
-
+  int DeltaOffsetSensorA = round(SensorBLine[1]-SensorALine[1]);
+  OffsetSensorA = OffsetSensorA + DeltaOffsetSensorA;
+  
   //Print results
   Serial.println("Line fit results");
   Serial.print("SensorA EQ: ");
@@ -186,10 +187,10 @@ void Calibration() {
   //Offset SensorA readings
   for(byte i=0; i<CountSensorA; i++)
   {
-    XYSensorA[i][1] = XYSensorA[i][1]+OffsetSensorA;
+    XYSensorA[i][1] = XYSensorA[i][1]+DeltaOffsetSensorA;
   }
 
-  /*
+  
   //Print results
   Serial.println("Shifted SensorA readings");
   for (byte i = 0; i < CountSensorA; i++)
@@ -198,7 +199,7 @@ void Calibration() {
     Serial.print(",");
     Serial.println(XYSensorA[i][1]);
   }
-  */
+  
 
   //Combine modified SensorA and SensorB data (overwrite XYSensorA)
   CountSensorB = 0;
@@ -209,7 +210,7 @@ void Calibration() {
     CountSensorB++;
   }
 
-  /*
+  
   //Print results
   Serial.println("Combined modified SensorA and SensorB values");
   for (byte i = 0; i < 60; i++)
@@ -218,12 +219,27 @@ void Calibration() {
     Serial.print(",");
     Serial.println(XYSensorA[i][1]);
   }
-  */
-
+  
+  
   //Line fit all the points
   LineFitLSR(XYSensorA,SensorALine,60);
   Slope = SensorALine[0];
   Intercept = SensorALine[1];
+
+  //Calculate theoretical positions (overwrite XYSensorA)
+   for (byte i = 0; i < 60; i++)
+  {
+    XYSensorA[i][1] = Time2Pos(XYSensorA[i][0]);
+  }
+  
+  //Print results
+  Serial.println("Theoretical positions");
+  for (byte i = 0; i < 60; i++)
+  {
+    Serial.print(XYSensorA[i][0]);
+    Serial.print(",");
+    Serial.println(XYSensorA[i][1]);
+  }
 
   //Print results
   Serial.println("Calibration results");
@@ -270,9 +286,9 @@ void LineFitLSR(double Data[60][2], double Equation[2], byte Count){
 }
 
 // >> Potentiometer Functions <<
-int Pos2Time(int Position) {                //Convert sensor position to time
+int Time2Pos(int Time) {                //Convert sensor position to time
   //Calculate time based on position to time equation
-  double Time = Slope * Position + Intercept;
+  double Position = Slope * Time + Intercept;
 
   //Round values to an integer
   int Result = round(Time);
@@ -399,6 +415,15 @@ void CheckStable() {                        //Check stability of sensors over 10
   }
 }
 
+int Time2Pos(int Time){
+  //Check for wrap around values
+  if(Time > 46)
+  {
+    Time = Time - 60;
+  }
+  double Position = ((double)Time - Intercept)/Slope;
+  return round(Position);
+}
 /*
 ***** ROLL THE CREDITS *****
   >> ReadVcc <<
