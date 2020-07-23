@@ -213,8 +213,8 @@ void GetUnkownPos() {                         //Get unknown position
   delay(2);
 
   //Get sensor reading
-  ValSensorA = analogRead(SensorA);// + 1000 + OffsetSensorA;
-  ValSensorB = analogRead(SensorB);// + 2000;
+  ValSensorA = analogRead(SensorA) + 1000 + OffsetSensorA;
+  ValSensorB = analogRead(SensorB) + 2000;
 
   //Turn sensor off
   digitalWrite(SensorPWR, LOW);

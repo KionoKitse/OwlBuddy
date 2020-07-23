@@ -20,8 +20,8 @@
   * BD621x (VCC 3-5.5V) (In 2-?V) 
 */
 //Define pins
-#define InA  10 //White InB
-#define InB  11 //Blue InA
+#define DriveA       10  //Drive motor H bridge Pin02 White 
+#define DriveB       11  //Drive motot H bridge Pin03 Blue
 
 void setup() {
   Serial.begin(9600);
@@ -34,15 +34,17 @@ void loop() {
 }
 
 void TestMotor(){
-  digitalWrite(InA,LOW);
-  digitalWrite(InB,HIGH);
+  //Counter clockwise
+  digitalWrite(DriveA,LOW);
+  digitalWrite(DriveB,HIGH);
   delay (1000);
-  digitalWrite(InB,LOW);
+  digitalWrite(DriveB,LOW);
   delay(500);
-  digitalWrite(InB,LOW);
-  digitalWrite(InA,HIGH);
+  //Clockwise
+  digitalWrite(DriveB,LOW);
+  digitalWrite(DriveA,HIGH);
   delay (1000);
-  digitalWrite(InA,LOW);
+  digitalWrite(DriveA,LOW);
   delay(500);
 }
 //Function that reads the output values connected to the motor leads
