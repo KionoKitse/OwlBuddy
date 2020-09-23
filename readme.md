@@ -45,6 +45,8 @@ Features
  * 2020-07-13 Mapping H bridge pins from SG90
  * 2020-07-13 Modify owl base to accept mini USB adapter
  * 2020-07-14 Probing H bridge found working pinout still a couple unknown pins
+ * 2020-09-22 Testing hall effect sensor based encoder 
+ * 2020-09-22 Hall encoder results look noisy filtering is very difficult maybe need another approach
  
 ### What's next
  * Test wake up from sleep using potentiometer
