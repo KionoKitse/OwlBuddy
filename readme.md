@@ -47,6 +47,9 @@ Features
  * 2020-07-14 Probing H bridge found working pinout still a couple unknown pins
  * 2020-09-22 Testing hall effect sensor based encoder 
  * 2020-09-22 Hall encoder results look noisy filtering is very difficult maybe need another approach
+ * 2020-09-22 Search mode is the best filter mode so far avergae filter offsets results slightly
+ * 2020-09-22 Inconsistant resistance resukts in some sections moving faster requiring different filter settings
+ * 2020-09-22 Should consider adjustable filter settings
  
 ### What's next
  * Test wake up from sleep using potentiometer
