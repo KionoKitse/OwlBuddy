@@ -12,7 +12,6 @@ Features
  * Integrated USB charging
  * Automatic sleep and wakeup
 
-	Retainer 
 ### Notes to user
  * Project documented at https://kionokitse.wordpress.com/owlbuddy
  * In development
@@ -47,9 +46,13 @@ Features
  * 2020-07-14 Probing H bridge found working pinout still a couple unknown pins
  * 2020-09-22 Testing hall effect sensor based encoder 
  * 2020-09-22 Hall encoder results look noisy filtering is very difficult maybe need another approach
- * 2020-09-22 Search mode is the best filter mode so far avergae filter offsets results slightly
- * 2020-09-22 Inconsistant resistance resukts in some sections moving faster requiring different filter settings
+ * 2020-09-22 Search mode is the best filter mode so far average filter offsets results slightly
+ * 2020-09-22 Inconsistent resistance results in some sections moving faster requiring different filter settings
  * 2020-09-22 Should consider adjustable filter settings
+ * 2020-09-26 Testing the idea of adding magnets to the internal gears of the servo
+ * 2020-09-27 Testing using metal rods instead of magnets in internal gears
+ * 2020-09-27 Tests worked but the process damages the gears not a (feasible option)
+ * 2020-09-27 Revisiting the two potentiometer design with trace reinforcement
  
 ### What's next
  * Test wake up from sleep using potentiometer
@@ -76,10 +79,6 @@ Features
  * During this time the beacon is activated
  * Afterwards the Arduino goes to sleep
  
- 
- 
- 
- 
 ### Notebook
  * Battery source Li-Po, Li-ion, or Ni-Mh. Ni-Mh has a similar capacity to Li-ion and weight isn't an issue. I already have these batteries and a simple USB charger for them. Size is a little big but it can fit ore or less.  
   
@@ -87,6 +86,22 @@ Features
  * Idea for slip ring power for LED strobe		https://gizmoplans.com/product/wind-turbine-slip-rings/
  * Interesting page on li-po charging			https://electronics-project-hub.com/arduino-lithium-ion-battery-charger/
  * CAD for SG90 Servo							https://www.thingiverse.com/thing:787942
- * Putting arduino to sleep with watchdog		https://learn.adafruit.com/low-power-wifi-datalogging/power-down-sleep
+ * Putting Arduino to sleep with watchdog		https://learn.adafruit.com/low-power-wifi-datalogging/power-down-sleep
  * Adjust VCC pin reading (didn't use)    		https://forum.arduino.cc/index.php?topic=435065.0 
  * Use VCC pin to read voltage		        	https://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage/
+ 
+### Next Blog Post
+2020-09-24 <font color="63C0EC"><b>P09_00_00 Starting a project from the middle</b></font>
+Wow where to begin? I'm somewhat conflicted with this project. It's something that I started back in June to be a present for a birthday in July. I originally thought that this project would be super simple and I could get it done in a few weeks then write about it in the blog. As time ticked by, things got more and more desperate as the deadline loomed and I started realizing that the project would not be done in time. Things like that happen and it's best to learn from past experiences and think of those things when evaluating a project time line. For this case it was not so much of a big deal since I can easily just call it a Christmas present and give myself some more time. After all these projects are intended to be enjoyable things that challenge me and bring joy. The part that is conflicting is just where to start with documenting this project? I'm 3 months into this project and knee deep in several hardware revisions. I feel like I've learned so much from this project and gained some valuable insight that I would love to share. At the same time I'd like to get this done well before Christmas since the post service can be quite slow and who know what issues are around the corner. This project has proven to be easily underestimated and fraught with unseen complications. I think what I will do is blog as if I have been doing so and try to fill in the gaps as I go. That will give me the most flexibility and allow for unforeseen delays at the risk on not remembering all the good stories I'd like to tell.  
+<font color="63C0EC">Category:</font> Engineering
+<font color="63C0EC">Tags:</font> Animatronics, Arduino, Engineering, Mechatronics, P09_00_00, Timer
+<a href="https://kionokitse.wordpress.com/HydroGarden/">Project Page</a>
+
+<a href="https://kionokitse.wordpress.com/owlbuddy"><font size="6" color="63C0EC"><b>OwlBuddy</b></font></a>
+<font color="63C0EC">Designation:</font> P09_00_00
+<font color="63C0EC">Category:</font> Engineering
+<font color="63C0EC">Status:</font> Exploratory
+<font color="63C0EC">Last update:</font> 2020-09-23
+<font color="63C0EC">Description:</font> Hacking an owl timer into an awesome owl timer 
+
+ 
