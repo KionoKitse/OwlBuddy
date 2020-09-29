@@ -53,8 +53,11 @@ Features
  * 2020-09-27 Testing using metal rods instead of magnets in internal gears
  * 2020-09-27 Tests worked but the process damages the gears not a (feasible option)
  * 2020-09-27 Revisiting the two potentiometer design with trace reinforcement
+ * 2020-09-29 Testing dual pot results seem promising
+ * 2020-09-29 For the dual pot design I'm noticing when pin A0 is floating it closely resembles pin A1 (not floating) but with more variance
  
 ### What's next
+ * Write a filter to sort out which potentiometer to read from
  * Test wake up from sleep using potentiometer
  * Design layout
  * Test pro mini pins
@@ -80,8 +83,9 @@ Features
  * Afterwards the Arduino goes to sleep
  
 ### Notebook
- * Battery source Li-Po, Li-ion, or Ni-Mh. Ni-Mh has a similar capacity to Li-ion and weight isn't an issue. I already have these batteries and a simple USB charger for them. Size is a little big but it can fit ore or less.  
-  
+ * Battery source Li-Po, Li-ion, or Ni-Mh. Ni-Mh has a similar capacity to Li-ion and weight isn't an issue. I already have these batteries and a simple USB charger for them. Size is a little big but it can fit more or less.  
+ 
+ * Sum of squares function that seems to work well https://www.thoughtco.com/sum-of-squares-formula-shortcut-3126266
  * Direct control of mini stepper motor			https://www.youtube.com/watch?v=MaByP2w_vtA
  * Idea for slip ring power for LED strobe		https://gizmoplans.com/product/wind-turbine-slip-rings/
  * Interesting page on li-po charging			https://electronics-project-hub.com/arduino-lithium-ion-battery-charger/
@@ -91,17 +95,14 @@ Features
  * Use VCC pin to read voltage		        	https://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage/
  
 ### Next Blog Post
-2020-09-24 <font color="63C0EC"><b>P09_00_00 Starting a project from the middle</b></font>
-Wow where to begin? I'm somewhat conflicted with this project. It's something that I started back in June to be a present for a birthday in July. I originally thought that this project would be super simple and I could get it done in a few weeks then write about it in the blog. As time ticked by, things got more and more desperate as the deadline loomed and I started realizing that the project would not be done in time. Things like that happen and it's best to learn from past experiences and think of those things when evaluating a project time line. For this case it was not so much of a big deal since I can easily just call it a Christmas present and give myself some more time. After all these projects are intended to be enjoyable things that challenge me and bring joy. The part that is conflicting is just where to start with documenting this project? I'm 3 months into this project and knee deep in several hardware revisions. I feel like I've learned so much from this project and gained some valuable insight that I would love to share. At the same time I'd like to get this done well before Christmas since the post service can be quite slow and who know what issues are around the corner. This project has proven to be easily underestimated and fraught with unseen complications. I think what I will do is blog as if I have been doing so and try to fill in the gaps as I go. That will give me the most flexibility and allow for unforeseen delays at the risk on not remembering all the good stories I'd like to tell.  
+2020-09-29 <font color="63C0EC"><b>P09_00_00 Dual pot design</b></font>
+Currently the big sticking point of this project is determining and controlling the head position. I have an SG90 servo that is directly coupled to the head and fixed to the body. I want the head to be able to rotate 360 degrees to allow the user to set a time between 1-60 min. The SG90 servo is only rated to 180 degrees of rotation so I've removed the limits. This allows me to drive the servo as essentially a gear head motor but removes the feedback loop. I've tried a lot of different ideas from hall effect sensors to pulse counting and stacked potentiometers. What I'm doing now is that stack potentiometer idea again. It was one of the first ideas I tried but I noticed that after a few days the potentiometers started bugging out. After disassembly I noticed that the wiper had worn down traces in the sections of the potentiometers that it was not designed to be in. The silver traces did not have any protection against the mechanical abrasion of the wiper. 
+>>>IMAGE<<<
+The idea was abandoned because I did not see any good way to prevent this from happening and still get continuous rotation. After a lot of trying other stuff it seemed that the dual potentiometer idea was the only idea that had shown some promise. Revisiting the idea I decided that maybe the best option was to protect the traces. For this, I've decided to use a bit of super glue to lay down a protective layer over the silver traces. I'm not sure how well this will stand up to the repeated abrasion but I'm keen to see if it will work. Here is an image of the dual potentiometer I've put together. The two potentiometers have their wipers in opposing positions so when one potentiometer is in the invalid range the other will be in it's valid range.
+>>>IMAGE<<< 
 <font color="63C0EC">Category:</font> Engineering
 <font color="63C0EC">Tags:</font> Animatronics, Arduino, Engineering, Mechatronics, P09_00_00, Timer
-<a href="https://kionokitse.wordpress.com/HydroGarden/">Project Page</a>
+<a href="https://kionokitse.wordpress.com/owlbuddy/">Project Page</a>
 
-<a href="https://kionokitse.wordpress.com/owlbuddy"><font size="6" color="63C0EC"><b>OwlBuddy</b></font></a>
-<font color="63C0EC">Designation:</font> P09_00_00
-<font color="63C0EC">Category:</font> Engineering
-<font color="63C0EC">Status:</font> Exploratory
-<font color="63C0EC">Last update:</font> 2020-09-23
-<font color="63C0EC">Description:</font> Hacking an owl timer into an awesome owl timer 
 
  

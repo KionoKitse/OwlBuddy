@@ -1,36 +1,40 @@
 
 
 //Define pins
-#define Sensor      A0  //Potentiometer
-#define SensorPWR   9  //Potentiometer power
-#define DriveB  10 //Green
-#define DriveA  11 //Red
+#define Power   A0 //Power
+#define PotA    A1 //Potentiometer A output
+#define PotB    A2 //Potentiometer B output
+#define Ground  A3 //Gound  
+
+
 
 //Global variables
-int SensorVal = 0;
+//int SensorVal = 0;
 
 
 void setup() {
   Serial.begin(9600);
   
   //Set pin mode
-  pinMode(SensorPWR, OUTPUT);
-  pinMode(Sensor, INPUT);
-  pinMode(DriveA, OUTPUT);
-  pinMode(DriveB, OUTPUT);
-  
+  pinMode(Power, OUTPUT);
+  pinMode(Power, OUTPUT);
+  pinMode(PotA, INPUT);
+  pinMode(PotB, INPUT);
 
+  digitalWrite(Power,HIGH);
+  digitalWrite(Ground,LOW);
 }
 
 void loop() {
-  //Serial.println(readVcc());
-  SensorVal = ReadSensor(); //Read the Potentiometer
-  Serial.println(SensorVal);
-  DriveMotor(1);
+  
+  Serial.print(analogRead(PotA));
+  Serial.print(",");
+  Serial.println(analogRead(PotB));
 
 
 }
 
+/*
 //Function to run drive motor
 void DriveMotor(bool Forward){
   if(Forward){
@@ -84,8 +88,9 @@ long readVcc() {
   result = 1142437L / result; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
   return result; // Vcc in millivolts
 }
-http://www.kcsemitech.com/upLoad/down/month_1902/201902261540192521.pdf
-
+//http://www.kcsemitech.com/upLoad/down/month_1902/201902261540192521.pdf
+*/
+/*
 2 4
 3 6
 4 `6
@@ -102,3 +107,4 @@ http://www.kcsemitech.com/upLoad/down/month_1902/201902261540192521.pdf
 VDD
 UH
 VH
+*/

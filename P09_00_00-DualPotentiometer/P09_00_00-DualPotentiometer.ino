@@ -1,40 +1,68 @@
 //Define pins
-#define SensorPWR     9  //Potentiometer power
-#define SensorA      A0  //Blue wire
-#define SensorB      A1  //White wire 
+#define PotA    A1 //Potentiometer A output
+#define PotB    A2 //Potentiometer B output
 
 //Global variables (Potentiometer Functions)
 int ValSensorA;
 int ValSensorB;
 
+//Filter settings
+int ArrayPotA[20];
+int ArrayPotB[20];
+
+
 void setup() {
   //Serial
   Serial.begin(9600);
-  Serial.println("");
-  Serial.println("Setup");
-
-  //General pin setup
-  pinMode(SensorPWR, OUTPUT);
-
-
 }
 
 void loop() {
-  //Turn sensor on
-  digitalWrite(SensorPWR, HIGH);
-  delay(2);
+  SensorSTD(20);
+}
 
-  //Get sensor reading
-  ValSensorA = analogRead(SensorA);
-  ValSensorB = analogRead(SensorB);
+void SensorSTD(int Ct)
+{
+  //Aquire Ct points for both sensors
+  for(int i=0; i<Ct; i++)
+  {
+    ArrayPotA[i] = analogRead(PotA);
+    ArrayPotB[i] = analogRead(PotB);
+  }
 
-  //Turn sensor off
-  digitalWrite(SensorPWR, LOW);
+  //Sum of squares
+  long SumSqA = 0;
+  long SumSqB = 0;
+  long TotA = 0;
+  long TotB = 0;
+  long tempA, tempB;
+  for(int i=0; i<Ct; i++)
+  {
+    SumSqA += pow(ArrayPotA[i], 2);
+    SumSqB += pow(ArrayPotB[i], 2);
+    TotA += ArrayPotA[i];
+    TotB += ArrayPotB[i];
+    
+    Serial.print(ArrayPotA[i]);
+    Serial.print(",");
+    Serial.println(ArrayPotB[i]);
+  }
+  TotA = pow(TotA, 2);
+  TotB = pow(TotB, 2);
+  TotA = TotA/Ct;
+  TotB = TotB/Ct;
 
-  Serial.print(ValSensorA);
+  int ResA = SumSqA-TotA;
+  int ResB = SumSqB-TotB;
+
+  Serial.println("");
+  Serial.print(SumSqA);
   Serial.print(",");
-  Serial.print(ValSensorB);
+  Serial.println(SumSqB);
+  Serial.print(TotA);
   Serial.print(",");
-  Serial.println(ValSensorA-ValSensorB);
-
+  Serial.println(TotB);
+  Serial.print(ResA);
+  Serial.print(",");
+  Serial.println(ResB);
+  delay(5000);
 }
