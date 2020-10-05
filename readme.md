@@ -104,5 +104,13 @@ The idea was abandoned because I did not see any good way to prevent this from h
 <font color="63C0EC">Tags:</font> Animatronics, Arduino, Engineering, Mechatronics, P09_00_00, Timer
 <a href="https://kionokitse.wordpress.com/owlbuddy/">Project Page</a>
 
-
+2020-09-29 <font color="63C0EC"><b>P09_00_00 Dual pot output</b></font>
+Recently I had a chance to test the new dual potentiometer design. The results are looking promising but not quite what I had been expecting. One of the effects of coating the traces in super glue is that they are no longer conductive. This is a good thing because if it was conductive, the power would short between the contacts. I hadn't thought of that but note to self: super glue is non-conductive. The other effect that was unexpected is that it seems that a floating pin (no signal) will mirror a non-floating pin on the Arduino. I'm not sure under what cases this is true but in my case it was. On my setup I had A0 reading potentiometer A (PotA) and A1 reading potentiometer B (PotB). When PotA was in the invalid region and thus acting as a floating pin I noticed that it mirrored the results seen on PotB. The same happens if PotB is in the invalid region and PotA is in the valid region. Originally I though that maybe I had some sort of short that was connecting the output of PotA and PotB but that was not the case. If I move PotA into the valid region and transverse the valid region on PotB it's clear to see that there is no connection between them. In effect, this means that I will always be reading two values from the potentiometers that on the surface look valid. Here is a graph of two periods or 520 degrees of rotation.
+>>>IMAGE<<<
+It's not clear which sensor is in the valid region and which sensor is in the invalid region. One thing I noticed though was that it was possible to distinguish the two based on the amount of noise in the data. If a pin is floating then it's likely that all the data that is coming in in noise. Not quite what is happening here but with noise there tends to be quite a lot of variance compare to a set pin. When I look closer and the signal data it's easy to see which sensor is actually in the valid region.
+>>>IMAGE<<<
+>>>IMAGE<<<
+<font color="63C0EC">Category:</font> Engineering
+<font color="63C0EC">Tags:</font> Animatronics, Arduino, Engineering, Mechatronics, P09_00_00, Timer
+<a href="https://kionokitse.wordpress.com/owlbuddy/">Project Page</a>
  
